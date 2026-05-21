@@ -86,5 +86,33 @@ func setFlag(cmd *cobra.Command, name, value string) error {
 }
 
 func loadDynamicCommands(cmd *cobra.Command) error {
+	api, mapping, err := loadEmbeddedSchema()
+	if err != nil {
+		return err
+	}
+	parser := NewParser(api, mapping)
+
+	rawCmd := &cobra.Command{
+		Use:   "raw",
+		Short: "Raw APISec API operations",
+		Long:  "Raw APISec API operations generated from the embedded OpenAPI schema. Operation help includes endpoint, operation ID, parameters, and body fallback guidance.",
+	}
+	rawCommands, err := parser.GenerateRawCommands()
+	if err != nil {
+		return err
+	}
+	for _, raw := range rawCommands {
+		rawCmd.AddCommand(raw)
+	}
+	cmd.AddCommand(rawCmd)
+
+	semanticCommands, err := parser.GenerateSemanticCommands()
+	if err != nil {
+		return err
+	}
+	for _, semantic := range semanticCommands {
+		cmd.AddCommand(semantic)
+	}
+
 	return nil
 }

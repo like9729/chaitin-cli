@@ -25,3 +25,16 @@ func TestParseCLIMapping(t *testing.T) {
 		t.Fatalf("path[2] = %q, want list", got)
 	}
 }
+
+func TestLoadEmbeddedSchema(t *testing.T) {
+	api, mapping, err := loadEmbeddedSchema()
+	if err != nil {
+		t.Fatalf("loadEmbeddedSchema() error = %v", err)
+	}
+	if len(api.Paths) == 0 {
+		t.Fatalf("embedded OpenAPI has no paths")
+	}
+	if mapping == nil {
+		t.Fatalf("mapping is nil")
+	}
+}
