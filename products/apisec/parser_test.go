@@ -47,6 +47,53 @@ func TestGenerateRawCommands(t *testing.T) {
 	}
 }
 
+func TestGenerateSemanticCommands(t *testing.T) {
+	api := loadMinimalOpenAPI(t)
+	mapping := &CLIMapping{Commands: []MappedCommand{
+		{
+			Path:        []string{"asset", "app", "list"},
+			OperationID: "ApplicationAPI_get",
+			Short:       "List APISec applications",
+			Long:        "List applications with pagination.",
+			Examples:    []string{"chaitin-cli apisec asset app list --page 1"},
+			Flags: map[string]MappedFlag{
+				"page": {Name: "page-number", Description: "Page number to fetch."},
+			},
+		},
+	}}
+	parser := NewParser(api, mapping)
+
+	commands, err := parser.GenerateSemanticCommands()
+	if err != nil {
+		t.Fatalf("GenerateSemanticCommands() error = %v", err)
+	}
+	asset := findCommand(commands, "asset")
+	if asset == nil {
+		t.Fatalf("asset command not generated")
+	}
+	app := findCommand(asset.Commands(), "app")
+	if app == nil {
+		t.Fatalf("asset app command not generated")
+	}
+	list := findCommand(app.Commands(), "list")
+	if list == nil {
+		t.Fatalf("asset app list command not generated")
+	}
+	if list.Short != "List APISec applications" {
+		t.Fatalf("Short = %q, want mapped short", list.Short)
+	}
+	if !strings.Contains(list.Long, "Operation ID: ApplicationAPI_get") {
+		t.Fatalf("Long missing operation ID: %s", list.Long)
+	}
+	flag := list.Flags().Lookup("page-number")
+	if flag == nil {
+		t.Fatalf("mapped page-number flag not generated")
+	}
+	if flag.Usage != "Page number to fetch." {
+		t.Fatalf("flag usage = %q, want mapped description", flag.Usage)
+	}
+}
+
 func loadMinimalOpenAPI(t *testing.T) *OpenAPI {
 	t.Helper()
 	data, err := os.ReadFile("testdata/openapi_minimal.json")

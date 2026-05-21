@@ -18,6 +18,12 @@ type Parser struct {
 	mapping *CLIMapping
 }
 
+type operationRef struct {
+	method string
+	path   string
+	op     *Operation
+}
+
 func NewParser(api *OpenAPI, mapping *CLIMapping) *Parser {
 	return &Parser{api: api, mapping: mapping}
 }
@@ -58,6 +64,73 @@ func (p *Parser) GenerateRawCommands() ([]*cobra.Command, error) {
 		commands = append(commands, parents[name])
 	}
 	return commands, nil
+}
+
+func (p *Parser) GenerateSemanticCommands() ([]*cobra.Command, error) {
+	if p.api == nil || p.mapping == nil {
+		return nil, nil
+	}
+	operations := p.operationsByID()
+	parents := make(map[string]*cobra.Command)
+
+	for _, mapped := range p.mapping.Commands {
+		if len(mapped.Path) == 0 {
+			continue
+		}
+		ref, ok := operations[mapped.OperationID]
+		if !ok {
+			continue
+		}
+		parent := getOrCreateMappedParent(parents, mapped.Path[0])
+		current := parent
+		for _, segment := range mapped.Path[1 : len(mapped.Path)-1] {
+			current = getOrCreateChild(current, segment)
+		}
+		leafName := mapped.Path[len(mapped.Path)-1]
+		current.AddCommand(p.createOperationCommand(leafName, ref.method, ref.path, ref.op, &mapped))
+	}
+
+	commands := make([]*cobra.Command, 0, len(parents))
+	for _, name := range sortedCommandKeys(parents) {
+		commands = append(commands, parents[name])
+	}
+	return commands, nil
+}
+
+func (p *Parser) operationsByID() map[string]operationRef {
+	operations := make(map[string]operationRef)
+	for _, path := range sortedPathKeys(p.api.Paths) {
+		pathItem := p.api.Paths[path]
+		for _, item := range operationsForPath(pathItem) {
+			if item.op == nil || item.op.OperationID == "" {
+				continue
+			}
+			operations[item.op.OperationID] = operationRef{method: item.method, path: path, op: item.op}
+		}
+	}
+	return operations
+}
+
+func getOrCreateMappedParent(parents map[string]*cobra.Command, name string) *cobra.Command {
+	name = normalizeSegment(name)
+	if parents[name] != nil {
+		return parents[name]
+	}
+	cmd := &cobra.Command{Use: name, Short: fmt.Sprintf("%s commands", name)}
+	parents[name] = cmd
+	return cmd
+}
+
+func getOrCreateChild(parent *cobra.Command, name string) *cobra.Command {
+	name = normalizeSegment(name)
+	for _, cmd := range parent.Commands() {
+		if cmd.Use == name {
+			return cmd
+		}
+	}
+	cmd := &cobra.Command{Use: name, Short: fmt.Sprintf("%s commands", name)}
+	parent.AddCommand(cmd)
+	return cmd
 }
 
 type pathOperation struct {
@@ -127,7 +200,7 @@ func (p *Parser) createOperationCommand(use, method, path string, op *Operation,
 		if shouldSkipManagedParam(param) {
 			continue
 		}
-		addParameterFlag(cmd, param)
+		addParameterFlag(cmd, param, mappedFlagForParam(mapped, param))
 	}
 	if op.RequestBody != nil {
 		cmd.Flags().String("body", "", "Request body as JSON string. Use this for complex or generated JSON input.")
@@ -183,12 +256,18 @@ func buildOperationHelp(method, path string, op *Operation, mapped *MappedComman
 	return strings.TrimRight(b.String(), "\n")
 }
 
-func addParameterFlag(cmd *cobra.Command, param Parameter) {
+func addParameterFlag(cmd *cobra.Command, param Parameter, mapped *MappedFlag) {
 	name := flagNameForParam(param)
+	if mapped != nil && mapped.Name != "" {
+		name = normalizeSegment(mapped.Name)
+	}
 	if cmd.Flags().Lookup(name) != nil {
 		return
 	}
 	desc := strings.TrimSpace(param.Description)
+	if mapped != nil && strings.TrimSpace(mapped.Description) != "" {
+		desc = strings.TrimSpace(mapped.Description)
+	}
 	if desc == "" {
 		desc = fmt.Sprintf("%s %s parameter", param.In, param.Name)
 	}
@@ -203,6 +282,19 @@ func addParameterFlag(cmd *cobra.Command, param Parameter) {
 	if param.Required {
 		_ = cmd.MarkFlagRequired(name)
 	}
+}
+
+func mappedFlagForParam(mapped *MappedCommand, param Parameter) *MappedFlag {
+	if mapped == nil || len(mapped.Flags) == 0 {
+		return nil
+	}
+	if flag, ok := mapped.Flags[param.Name]; ok {
+		return &flag
+	}
+	if flag, ok := mapped.Flags[flagNameForParam(param)]; ok {
+		return &flag
+	}
+	return nil
 }
 
 func (p *Parser) executeCommand(cmd *cobra.Command, method, path string, op *Operation) error {
