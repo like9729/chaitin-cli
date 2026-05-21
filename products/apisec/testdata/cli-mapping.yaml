@@ -1,0 +1,12 @@
+commands:
+  - path: [asset, app, list]
+    operationId: ApplicationAPI_get
+    short: List applications
+    rawHidden: false
+  - path: [asset, app, create]
+    operationId: ApplicationAPI_post
+    short: Create application
+    flags:
+      name:
+        name: name
+        description: Application name.
