@@ -28,6 +28,8 @@ jobs:
 
       - name: Setup Task
         uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ github.token }}
 
       - name: Run fmt check
         run: task fmt:check
@@ -75,6 +77,8 @@ jobs:
 
       - name: Setup Task
         uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ github.token }}
 
       - name: Set version
         run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
