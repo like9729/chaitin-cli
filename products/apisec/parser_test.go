@@ -94,6 +94,33 @@ func TestGenerateSemanticCommands(t *testing.T) {
 	}
 }
 
+func TestEmbeddedMappingCoversPriorityGroups(t *testing.T) {
+	api, mapping, err := loadEmbeddedSchema()
+	if err != nil {
+		t.Fatalf("loadEmbeddedSchema() error = %v", err)
+	}
+	commands, err := NewParser(api, mapping).GenerateSemanticCommands()
+	if err != nil {
+		t.Fatalf("GenerateSemanticCommands() error = %v", err)
+	}
+
+	for _, path := range [][]string{
+		{"asset", "api"},
+		{"asset", "site"},
+		{"asset", "app"},
+		{"asset", "visitor"},
+		{"asset", "config"},
+		{"data", "rule"},
+		{"risk", "config"},
+		{"risk", "event"},
+		{"risk", "vulnerability"},
+	} {
+		if findCommandPath(commands, path...) == nil {
+			t.Fatalf("embedded mapping missing command path %v", path)
+		}
+	}
+}
+
 func loadMinimalOpenAPI(t *testing.T) *OpenAPI {
 	t.Helper()
 	data, err := os.ReadFile("testdata/openapi_minimal.json")
@@ -114,4 +141,18 @@ func findCommand(commands []*cobra.Command, use string) *cobra.Command {
 		}
 	}
 	return nil
+}
+
+func findCommandPath(commands []*cobra.Command, path ...string) *cobra.Command {
+	if len(path) == 0 {
+		return nil
+	}
+	cmd := findCommand(commands, path[0])
+	for _, segment := range path[1:] {
+		if cmd == nil {
+			return nil
+		}
+		cmd = findCommand(cmd.Commands(), segment)
+	}
+	return cmd
 }

@@ -1,1 +1,221 @@
-commands: []
+commands:
+  - path: [asset, app, list]
+    operationId: ApplicationAPI_get
+    short: List applications
+    long: List APISec applications. Operation help keeps the API operation ID for precise automation.
+    examples:
+      - chaitin-cli apisec asset app list --output json
+  - path: [asset, app, create]
+    operationId: ApplicationAPI_post
+    short: Create application
+    examples:
+      - chaitin-cli apisec asset app create --body-file app.json
+  - path: [asset, app, update]
+    operationId: ApplicationAPI_put
+    short: Update application
+  - path: [asset, app, delete]
+    operationId: ApplicationAPI_delete
+    short: Delete applications
+  - path: [asset, app, simple-list]
+    operationId: SimpleApplicationAPI_get
+    short: List simple application records
+  - path: [asset, app, priority]
+    operationId: ApplicationPriorityAPI_put
+    short: Update application priority
+  - path: [asset, app, relocate-site]
+    operationId: RelocateSiteAPI_post
+    short: Relocate sites between applications
+
+  - path: [asset, site, list]
+    operationId: SiteAPI_get
+    short: List sites
+  - path: [asset, site, create]
+    operationId: SiteAPI_post
+    short: Create sites
+  - path: [asset, site, update]
+    operationId: SiteAPI_put
+    short: Update sites
+  - path: [asset, site, delete]
+    operationId: SiteAPI_delete
+    short: Delete sites
+  - path: [asset, site, update-info]
+    operationId: SiteInfoAPI_put
+    short: Update site information
+  - path: [asset, site, move-to-app]
+    operationId: WebsiteMoveInAppAPI_put
+    short: Move websites into an application
+  - path: [asset, site, enabled]
+    operationId: WebsiteEnableDisableAPI_get
+    short: Get website enable status
+  - path: [asset, site, set-enabled]
+    operationId: WebsiteEnableDisableAPI_put
+    short: Enable or disable website discovery
+
+  - path: [asset, api, list]
+    operationId: InterfaceAPI_get
+    short: List API assets
+  - path: [asset, api, create]
+    operationId: InterfaceAPI_post
+    short: Create API assets
+  - path: [asset, api, update]
+    operationId: InterfaceAPI_put
+    short: Update API assets
+  - path: [asset, api, delete]
+    operationId: InterfaceAPI_delete
+    short: Delete API assets
+  - path: [asset, api, detail]
+    operationId: InterfaceDetailsAPI_get
+    short: Get API asset details
+  - path: [asset, api, schema]
+    operationId: SchemaAPI_get
+    short: List API schemas
+  - path: [asset, api, data-tags]
+    operationId: DataTagsAPI_get
+    short: List API data tags
+  - path: [asset, api, status]
+    operationId: InterfaceStatusAPI_get
+    short: Get API status
+  - path: [asset, api, set-status]
+    operationId: InterfaceStatusAPI_put
+    short: Update API status
+  - path: [asset, api, remark]
+    operationId: InterfaceRemarkAPI_put
+    short: Update API remark
+  - path: [asset, api, slim-list]
+    operationId: InterfaceSlimAPI_get
+    short: List slim API asset records
+
+  - path: [asset, visitor, query]
+    operationId: UserSrcIpInfoQueryAPI_get
+    short: Query visitor source IP information
+  - path: [asset, visitor, list]
+    operationId: UserSrcIpListAPI_get
+    short: List visitor source IPs
+  - path: [asset, visitor, group]
+    operationId: UserSrcIpGroupAPI_get
+    short: Group visitor source IPs
+  - path: [asset, visitor, requester]
+    operationId: UserSrcIpAsRequesterAPI_get
+    short: Query visitor requester view
+  - path: [asset, visitor, responder]
+    operationId: UserSrcIpAsResponserAPI_get
+    short: Query visitor responder view
+  - path: [asset, visitor, flow-chart]
+    operationId: UserSrcIpFlowChartAPI_get
+    short: Query visitor flow chart
+
+  - path: [asset, config, detector]
+    operationId: DetectorConfigAPI_get
+    short: Get asset discovery detector config
+  - path: [asset, config, set-detector]
+    operationId: DetectorConfigAPI_put
+    short: Update asset discovery detector config
+  - path: [asset, config, success-sign]
+    operationId: SuccessSignAPI_get
+    short: List success sign rules
+  - path: [asset, config, create-success-sign]
+    operationId: SuccessSignAPI_post
+    short: Create success sign rule
+  - path: [asset, config, update-success-sign]
+    operationId: SuccessSignAPI_put
+    short: Update success sign rule
+  - path: [asset, config, delete-success-sign]
+    operationId: SuccessSignAPI_delete
+    short: Delete success sign rules
+  - path: [asset, config, identity]
+    operationId: IdentityAPI_get
+    short: List identity rules
+  - path: [asset, config, create-identity]
+    operationId: IdentityAPI_post
+    short: Create identity rule
+  - path: [asset, config, update-identity]
+    operationId: IdentityAPI_put
+    short: Update identity rule
+  - path: [asset, config, delete-identity]
+    operationId: IdentityAPI_delete
+    short: Delete identity rules
+  - path: [asset, config, create-ignored-api]
+    operationId: IgnoredInterfaceAPI_post
+    short: Create ignored API rule
+  - path: [asset, config, update-ignored-api]
+    operationId: IgnoredInterfaceAPI_put
+    short: Update ignored API rule
+  - path: [asset, config, resource-recognition]
+    operationId: ResourceRecognitionBindingAPI_get
+    short: Get resource recognition binding
+  - path: [asset, config, set-resource-recognition]
+    operationId: ResourceRecognitionBindingAPI_put
+    short: Update resource recognition binding
+  - path: [asset, config, effective-scope]
+    operationId: EffectiveScopeAPI_get
+    short: Get effective scope
+
+  - path: [data, rule, create]
+    operationId: DiscoverDataTaskAPI_post
+    short: Create data discovery rule
+  - path: [data, rule, update]
+    operationId: DiscoverDataTaskAPI_put
+    short: Update data discovery rule
+  - path: [data, rule, update-built-in]
+    operationId: BuildInDiscoverDataTaskAPI_put
+    short: Update built-in data discovery rule
+  - path: [data, rule, refresh-desensitize-cache]
+    operationId: RefreshDesensitizeCacheAPI_post
+    short: Refresh desensitize cache
+  - path: [data, sensitive-transfer, characteristic]
+    operationId: SensitiveDataCharacteristicAPI_get
+    short: Query sensitive data transfer characteristics
+
+  - path: [risk, config, create-strategy]
+    operationId: RiskStrategyAPI_post
+    short: Create risk discovery strategy
+  - path: [risk, config, update-strategy]
+    operationId: RiskStrategyAPI_put
+    short: Update risk discovery strategy
+  - path: [risk, config, model]
+    operationId: RiskModelConfigAPI_get
+    short: Get risk model config
+  - path: [risk, config, set-model]
+    operationId: RiskModelConfigAPI_put
+    short: Update risk model config
+  - path: [risk, config, function-status]
+    operationId: RiskFunctionStatusAPI_get
+    short: Get risk function status
+  - path: [risk, config, create-weak-cipher]
+    operationId: WeakerCipherAPI_post
+    short: Create weak cipher or weak password config
+  - path: [risk, config, delete-weak-cipher]
+    operationId: WeakerCipherAPI_delete
+    short: Delete weak cipher or weak password config
+  - path: [risk, config, create-whitelist]
+    operationId: EventWhiteListAPI_post
+    short: Create risk event whitelist
+  - path: [risk, config, update-whitelist]
+    operationId: EventWhiteListAPI_put
+    short: Update risk event whitelist
+  - path: [risk, config, delete-whitelist]
+    operationId: EventWhiteListAPI_delete
+    short: Delete risk event whitelist
+  - path: [risk, config, auxiliary-info]
+    operationId: RiskStrategyAuxiliaryInfoAPI_get
+    short: Get risk strategy auxiliary info
+
+  - path: [risk, event, list]
+    operationId: RiskEventAPI_get
+    short: Query risk events
+  - path: [risk, event, group]
+    operationId: RiskEventGroupAPI_get
+    short: Query risk event group
+  - path: [risk, event, update-group]
+    operationId: RiskEventGroupAPI_put
+    short: Update risk event group
+
+  - path: [risk, vulnerability, update]
+    operationId: VulnerabilityAPI_put
+    short: Update vulnerability status or comment
+  - path: [risk, vulnerability, statistics]
+    operationId: VulnerabilityStatistics_get
+    short: Query vulnerability statistics
+  - path: [risk, vulnerability, detail-statistics]
+    operationId: VulnerabilityDetailStatistics_get
+    short: Query vulnerability detail statistics
