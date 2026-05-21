@@ -327,6 +327,9 @@ func (p *Parser) executeCommand(cmd *cobra.Command, method, path string, op *Ope
 	client := getClient(cmd)
 	var result any
 	if err := client.Do(cmd.Context(), method, apiPath, query, body, &result); err != nil {
+		if _, ok := err.(dryRunResult); ok {
+			return nil
+		}
 		return err
 	}
 	return getRenderer(cmd).Render(result)

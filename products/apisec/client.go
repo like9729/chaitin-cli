@@ -16,6 +16,10 @@ import (
 
 var dryRun bool
 
+type dryRunResult struct{}
+
+func (dryRunResult) Error() string { return "dry run" }
+
 type Client struct {
 	config     *Config
 	httpClient *http.Client
@@ -68,7 +72,7 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 		logRequest(req, body)
 	}
 	if dryRun {
-		return nil
+		return dryRunResult{}
 	}
 
 	resp, err := c.httpClient.Do(req)
