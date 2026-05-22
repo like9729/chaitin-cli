@@ -168,28 +168,28 @@ func newDetectGetCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "get",
 		Short: "Get detection log details",
-		Long: `Get detection log details by event ID and timestamp.
+		Long: `Get detection log details by event ID.
 
 Parameters:
   --event-id   Event ID (required, get from 'list' command)
-  --timestamp  Timestamp in Unix format (required)
+  --timestamp  Timestamp in Unix format (optional, narrows the query)
 
 Examples:
+  safeline log detect get --event-id "6edb4c7eb69042cd996045e3ee5526d9"
   safeline log detect get --event-id "6edb4c7eb69042cd996045e3ee5526d9" --timestamp "1774857841"`,
 		RunE: func(c *cobra.Command, args []string) error {
 			if eventID == "" {
 				return fmt.Errorf("--event-id is required")
 			}
-			if timestamp == "" {
-				return fmt.Errorf("--timestamp is required")
-			}
 
 			cl := cmd.NewClient()
 
 			query := map[string]string{
-				"scope":            "log:detect_log:detail",
-				"event_id__exact":  eventID,
-				"timestamp__exact": timestamp,
+				"scope":           "log:detect_log:detail",
+				"event_id__exact": eventID,
+			}
+			if timestamp != "" {
+				query["timestamp__exact"] = timestamp
 			}
 
 			env, err := cl.Do("GET", "/api/FilterV2API", nil, query)
@@ -241,10 +241,9 @@ Examples:
 	}
 
 	c.Flags().StringVar(&eventID, "event-id", "", "Event ID (required)")
-	c.Flags().StringVar(&timestamp, "timestamp", "", "Timestamp in Unix format (required)")
+	c.Flags().StringVar(&timestamp, "timestamp", "", "Timestamp in Unix format (optional)")
 
 	c.MarkFlagRequired("event-id")
-	c.MarkFlagRequired("timestamp")
 
 	return c
 }
