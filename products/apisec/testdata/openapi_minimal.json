@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "APISec",
+    "version": "26.05"
+  },
+  "paths": {
+    "/api/ApplicationAPI": {
+      "get": {
+        "operationId": "ApplicationAPI_get",
+        "summary": "List applications",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ApplicationAPI_post",
+        "summary": "Create application",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Application name."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
