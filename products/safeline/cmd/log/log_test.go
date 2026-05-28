@@ -44,7 +44,7 @@ func testDetectGetOmitsEmptyTimestamp(t *testing.T, args []string) {
 	}))
 	defer srv.Close()
 
-	cmdpkg.SetFlags(srv.URL, "token", "json", false, false)
+	cmdpkg.SetFlags(srv.URL, "token", "json", false, false, "", "", "", "")
 
 	c := newDetectGetCmd()
 	out := &strings.Builder{}

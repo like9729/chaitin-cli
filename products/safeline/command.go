@@ -11,6 +11,8 @@ import (
 	"github.com/chaitin/chaitin-cli/config"
 	cmdpkg "github.com/chaitin/chaitin-cli/products/safeline/cmd"
 	"github.com/chaitin/chaitin-cli/products/safeline/cmd/acl"
+	"github.com/chaitin/chaitin-cli/products/safeline/cmd/cert"
+	"github.com/chaitin/chaitin-cli/products/safeline/cmd/inspect"
 	"github.com/chaitin/chaitin-cli/products/safeline/cmd/ipgroup"
 	"github.com/chaitin/chaitin-cli/products/safeline/cmd/log"
 	"github.com/chaitin/chaitin-cli/products/safeline/cmd/network"
@@ -26,16 +28,22 @@ import (
 )
 
 var (
-	url      string
-	apiKey   string
-	indent   bool
-	insecure bool
-	dryRun   bool
+	url                     string
+	apiKey                  string
+	indent                  bool
+	insecure                bool
+	dryRun                  bool
+	safelineVersionOverride string
+	operationModeOverride   string
+	configVersion           string
+	configOperationMode     string
 )
 
 type runtimeConfig struct {
-	URL    string `yaml:"url"`
-	APIKey string `yaml:"api_key"`
+	URL           string `yaml:"url"`
+	APIKey        string `yaml:"api_key"`
+	Version       string `yaml:"version"`
+	OperationMode string `yaml:"operation_mode"`
 }
 
 // NewCommand creates the safeline product command.
@@ -71,7 +79,7 @@ func NewCommand() *cobra.Command {
 			if indent {
 				output = "json"
 			}
-			cmdpkg.SetFlags(url, apiKey, output, insecure, dryRun)
+			cmdpkg.SetFlags(url, apiKey, output, insecure, dryRun, safelineVersionOverride, operationModeOverride, configVersion, configOperationMode)
 
 			// Detect server version (non-blocking, failures are silent)
 			detectServerVersion()
@@ -85,6 +93,8 @@ func NewCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&indent, "indent", false, "Pretty-print JSON output")
 	cmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Show what would be done without making changes")
 	cmd.PersistentFlags().BoolVar(&insecure, "insecure", true, "Skip TLS certificate verification")
+	cmd.PersistentFlags().StringVar(&safelineVersionOverride, "safeline-version", "", "SafeLine version override for capability selection, such as 23.01.014")
+	cmd.PersistentFlags().StringVar(&operationModeOverride, "operation-mode", "", "SafeLine operation mode override, such as software-reverse-proxy")
 
 	return cmd
 }
@@ -131,6 +141,8 @@ func detectServerVersion() {
 func RegisterModules(cmd *cobra.Command) {
 	// Register new user-friendly commands
 	cmd.AddCommand(stats.NewCommand())
+	cmd.AddCommand(inspect.NewCommand())
+	cmd.AddCommand(cert.NewCommand())
 	cmd.AddCommand(site.NewCommand())
 	cmd.AddCommand(ipgroup.NewCommand())
 	cmd.AddCommand(acl.NewCommand())
@@ -217,4 +229,7 @@ func ApplyRuntimeConfig(cmd *cobra.Command, cfg config.Raw) {
 	if flag := cmd.Flags().Lookup("api-key"); flag != nil && !flag.Changed {
 		apiKey = productCfg.APIKey
 	}
+
+	configVersion = productCfg.Version
+	configOperationMode = productCfg.OperationMode
 }

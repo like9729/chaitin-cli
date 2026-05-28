@@ -17,6 +17,12 @@ safeline-ce:
 safeline:
   url: ""
   api_key: ""
+  # Optional fallback when the CLI cannot detect these from the target.
+  # Supported first-version site-create modes:
+  # - Software Reverse Proxy
+  # - Software Cluster Reverse Proxy
+  version: ""
+  operation_mode: ""
 
 ddr:
   url: ""

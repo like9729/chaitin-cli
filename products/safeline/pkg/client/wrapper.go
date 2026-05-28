@@ -79,7 +79,7 @@ func New(baseURL string, httpClient *http.Client) *Client {
 		httpClient = http.DefaultClient
 	}
 	return &Client{
-		BaseURL:    baseURL,
+		BaseURL:    strings.TrimRight(baseURL, "/"),
 		HTTPClient: httpClient,
 	}
 }
@@ -88,6 +88,54 @@ func New(baseURL string, httpClient *http.Client) *Client {
 // query supports both single values (string) and multiple values ([]string).
 func (c *Client) Do(method, path string, body io.Reader, query map[string]string) (*Envelope, error) {
 	return c.DoMulti(method, path, body, query, nil)
+}
+
+// DoRaw performs an HTTP request with caller-provided body and content type.
+func (c *Client) DoRaw(method, path string, body io.Reader, contentType string, query map[string]string) (*Envelope, error) {
+	u, err := url.Parse(c.BaseURL + path)
+	if err != nil {
+		return nil, fmt.Errorf("invalid URL: %w", err)
+	}
+	q := u.Query()
+	for k, v := range query {
+		q.Set(k, v)
+	}
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var envelope Envelope
+	if err := json.Unmarshal(respBody, &envelope); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+	if envelope.Err != nil && *envelope.Err != "" {
+		errMsg := envelope.GetMsg()
+		if errMsg == "" {
+			errMsg = string(envelope.Data)
+		}
+		return &envelope, fmt.Errorf("API error [%s]: %s", *envelope.Err, errMsg)
+	}
+	return &envelope, nil
 }
 
 // DoMulti performs an HTTP request with support for multi-value query parameters.

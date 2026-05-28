@@ -110,6 +110,8 @@ func NewCommand() *cobra.Command {
 	c.AddCommand(newUpdateCmd())
 	c.AddCommand(newEnableCmd())
 	c.AddCommand(newDisableCmd())
+	c.AddCommand(newCreateCmd())
+	c.AddCommand(newDeleteCmd())
 	return c
 }
 
