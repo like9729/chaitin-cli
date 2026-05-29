@@ -54,8 +54,32 @@ func TestEndpointForMode(t *testing.T) {
 		t.Fatalf("unexpected cluster endpoint %q %v", path, ok)
 	}
 
-	_, ok = EndpointForMode(ModeHardwareReverseProxy)
-	if ok {
-		t.Fatalf("hardware reverse proxy must not be supported by site create")
+}
+
+func TestEndpointForModeSupportsAllSiteCreateModes(t *testing.T) {
+	tests := []struct {
+		mode OperationMode
+		want string
+	}{
+		{ModeSoftwareReverseProxy, "/api/SoftwareReverseProxyWebsiteAPI"},
+		{ModeSoftwareClusterReverseProxy, "/api/SoftwareClusterReverseProxyWebsiteAPI"},
+		{ModeHardwareReverseProxy, "/api/HardwareReverseProxyWebsiteAPI"},
+		{ModeHardwareTransparentProxy, "/api/HardwareTransparentProxyWebsiteAPI"},
+		{ModeHardwareTransparentBridging, "/api/HardwareTransparentBridgingWebsiteAPI"},
+		{ModeSoftwarePortMirroring, "/api/SoftwarePortMirroringWebsiteAPI"},
+		{ModeHardwarePortMirroring, "/api/HardwareTrafficDetectionWebsiteAPI"},
+		{ModeHardwareTrafficDetection, "/api/HardwareTrafficDetectionWebsiteAPI"},
+		{ModeHardwareRouterProxy, "/api/HardwareReverseProxyWebsiteAPI"},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.mode), func(t *testing.T) {
+			got, ok := EndpointForMode(tt.mode)
+			if !ok {
+				t.Fatalf("EndpointForMode(%q) not supported", tt.mode)
+			}
+			if got != tt.want {
+				t.Fatalf("EndpointForMode(%q) = %q, want %q", tt.mode, got, tt.want)
+			}
+		})
 	}
 }

@@ -34,6 +34,35 @@ func TestSiteCreateCapabilitiesCluster(t *testing.T) {
 	}
 }
 
+func TestSiteCreateCapabilitiesStrategies(t *testing.T) {
+	tests := []struct {
+		mode OperationMode
+		want string
+	}{
+		{ModeSoftwareReverseProxy, "semantic"},
+		{ModeHardwareReverseProxy, "semantic"},
+		{ModeHardwareRouterProxy, "semantic"},
+		{ModeSoftwareClusterReverseProxy, "semantic_limited"},
+		{ModeHardwareTransparentProxy, "request_only"},
+		{ModeHardwareTransparentBridging, "request_only"},
+		{ModeSoftwarePortMirroring, "request_only"},
+		{ModeHardwarePortMirroring, "request_only"},
+		{ModeHardwareTrafficDetection, "request_only"},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.mode), func(t *testing.T) {
+			endpoint, ok := EndpointForMode(tt.mode)
+			if !ok {
+				t.Fatalf("missing endpoint for %q", tt.mode)
+			}
+			caps := SiteCreateCapabilities(Context{OperationMode: tt.mode, Endpoint: endpoint, SiteCreateSupported: true})
+			if caps.CreateStrategy != tt.want {
+				t.Fatalf("CreateStrategy = %q, want %q", caps.CreateStrategy, tt.want)
+			}
+		})
+	}
+}
+
 func contains(xs []string, want string) bool {
 	for _, x := range xs {
 		if x == want {

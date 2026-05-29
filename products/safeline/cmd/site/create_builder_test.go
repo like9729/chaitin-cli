@@ -2,6 +2,7 @@ package site
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	safelineruntime "github.com/chaitin/chaitin-cli/products/safeline/runtime"
@@ -81,6 +82,49 @@ func TestBuildRedirectPayload(t *testing.T) {
 	}
 }
 
+func TestBuildCreatePayloadHardwareReverseProxyUsesReverseProxyBackend(t *testing.T) {
+	payload, err := buildCreatePayload(safelineruntime.Context{OperationMode: safelineruntime.ModeHardwareReverseProxy}, createOptions{
+		Name:          "hw-rp",
+		Domains:       []string{"hw.example.com"},
+		Ports:         []int{80},
+		URLPath:       "/",
+		URLPathOp:     "pre",
+		BackendType:   "proxy",
+		Upstreams:     []string{"http://127.0.0.1:8080"},
+		PolicyGroupID: 1,
+	})
+	if err != nil {
+		t.Fatalf("buildCreatePayload: %v", err)
+	}
+	backend := payload["backend_config"].(map[string]any)
+	if backend["type"] != "proxy" {
+		t.Fatalf("backend type = %v", backend["type"])
+	}
+}
+
+func TestBuildCreatePayloadRequestOnlyModesRequireRawRequest(t *testing.T) {
+	requestOnly := []safelineruntime.OperationMode{
+		safelineruntime.ModeHardwareTransparentProxy,
+		safelineruntime.ModeHardwareTransparentBridging,
+		safelineruntime.ModeSoftwarePortMirroring,
+		safelineruntime.ModeHardwarePortMirroring,
+		safelineruntime.ModeHardwareTrafficDetection,
+	}
+	for _, mode := range requestOnly {
+		t.Run(string(mode), func(t *testing.T) {
+			_, err := buildCreatePayload(safelineruntime.Context{OperationMode: mode}, createOptions{
+				Name:          "site-a",
+				Domains:       []string{"a.example.com"},
+				Ports:         []int{80},
+				PolicyGroupID: 1,
+			})
+			if err == nil || !strings.Contains(err.Error(), "requires --request JSON") {
+				t.Fatalf("expected request-only error, got %v", err)
+			}
+		})
+	}
+}
+
 func TestBuildClusterPayloadRejectsBackendFlags(t *testing.T) {
 	opts := createOptions{Name: "cluster-a", Domains: []string{"api.example.com"}, Ports: []int{80}, URLPath: "/", URLPathOp: "pre", BackendType: "proxy", Upstreams: []string{"http://10.0.0.1"}, PolicyGroupID: 1}
 	_, err := buildCreatePayload(safelineruntime.Context{OperationMode: safelineruntime.ModeSoftwareClusterReverseProxy, VersionFamily: safelineruntime.Family23_01}, opts)
@@ -120,5 +164,30 @@ func TestNormalizeRequestJSONAppliesEnableOverride(t *testing.T) {
 	}
 	if payload["is_enabled"] != true {
 		t.Fatalf("--enable must override is_enabled: %+v", payload)
+	}
+}
+
+func TestBuildCreatePayloadRawRequestWorksForEveryMode(t *testing.T) {
+	modes := []safelineruntime.OperationMode{
+		safelineruntime.ModeSoftwareReverseProxy,
+		safelineruntime.ModeSoftwareClusterReverseProxy,
+		safelineruntime.ModeHardwareReverseProxy,
+		safelineruntime.ModeHardwareTransparentProxy,
+		safelineruntime.ModeHardwareTransparentBridging,
+		safelineruntime.ModeSoftwarePortMirroring,
+		safelineruntime.ModeHardwarePortMirroring,
+		safelineruntime.ModeHardwareTrafficDetection,
+		safelineruntime.ModeHardwareRouterProxy,
+	}
+	for _, mode := range modes {
+		t.Run(string(mode), func(t *testing.T) {
+			payload, err := buildCreatePayload(safelineruntime.Context{OperationMode: mode}, createOptions{Request: json.RawMessage(`{"name":"raw-site","server_names":["raw.example.com"],"ports":[{"port":80,"ssl":false,"http2":false}],"policy_group":1,"session_method":{"type":"off"}}`)})
+			if err != nil {
+				t.Fatalf("buildCreatePayload raw request: %v", err)
+			}
+			if payload["is_enabled"] != false {
+				t.Fatalf("is_enabled default = %v", payload["is_enabled"])
+			}
+		})
 	}
 }

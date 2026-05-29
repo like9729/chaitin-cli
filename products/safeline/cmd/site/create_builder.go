@@ -99,7 +99,7 @@ func buildCreatePayload(ctx safelineruntime.Context, opts createOptions) (map[st
 	}
 
 	switch ctx.OperationMode {
-	case safelineruntime.ModeSoftwareReverseProxy:
+	case safelineruntime.ModeSoftwareReverseProxy, safelineruntime.ModeHardwareReverseProxy, safelineruntime.ModeHardwareRouterProxy:
 		backend, err := buildReverseProxyBackend(opts)
 		if err != nil {
 			return nil, err
@@ -112,6 +112,8 @@ func buildCreatePayload(ctx safelineruntime.Context, opts createOptions) (map[st
 		if len(opts.Upstreams) > 0 || opts.RedirectURL != "" || (opts.RedirectCode != 0 && opts.RedirectCode != 302) {
 			return nil, fmt.Errorf("cluster reverse proxy semantic create does not accept backend, upstream, or redirect flags")
 		}
+	case safelineruntime.ModeHardwareTransparentProxy, safelineruntime.ModeHardwareTransparentBridging, safelineruntime.ModeSoftwarePortMirroring, safelineruntime.ModeHardwarePortMirroring, safelineruntime.ModeHardwareTrafficDetection:
+		return nil, fmt.Errorf("operation mode %q requires --request JSON for site create", ctx.OperationMode)
 	default:
 		return nil, fmt.Errorf("site create is unsupported for operation mode %q", ctx.OperationMode)
 	}

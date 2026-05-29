@@ -87,6 +87,18 @@ func EndpointForMode(mode OperationMode) (string, bool) {
 		return "/api/SoftwareReverseProxyWebsiteAPI", true
 	case ModeSoftwareClusterReverseProxy:
 		return "/api/SoftwareClusterReverseProxyWebsiteAPI", true
+	case ModeHardwareReverseProxy:
+		return "/api/HardwareReverseProxyWebsiteAPI", true
+	case ModeHardwareTransparentProxy:
+		return "/api/HardwareTransparentProxyWebsiteAPI", true
+	case ModeHardwareTransparentBridging:
+		return "/api/HardwareTransparentBridgingWebsiteAPI", true
+	case ModeSoftwarePortMirroring:
+		return "/api/SoftwarePortMirroringWebsiteAPI", true
+	case ModeHardwarePortMirroring, ModeHardwareTrafficDetection:
+		return "/api/HardwareTrafficDetectionWebsiteAPI", true
+	case ModeHardwareRouterProxy:
+		return "/api/HardwareReverseProxyWebsiteAPI", true
 	default:
 		return "", false
 	}

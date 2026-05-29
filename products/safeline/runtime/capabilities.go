@@ -3,6 +3,7 @@ package runtime
 type SiteCreateCapability struct {
 	Supported            bool     `json:"supported"`
 	Endpoint             string   `json:"endpoint,omitempty"`
+	CreateStrategy       string   `json:"create_strategy,omitempty"`
 	DefaultEnabled       bool     `json:"default_enabled"`
 	SemanticBackendTypes []string `json:"semantic_backend_types"`
 	RequestBackendTypes  []string `json:"request_backend_types"`
@@ -33,15 +34,23 @@ func SiteCreateCapabilities(ctx Context) SiteCreateCapability {
 	}
 
 	switch ctx.OperationMode {
-	case ModeSoftwareReverseProxy:
+	case ModeSoftwareReverseProxy, ModeHardwareReverseProxy, ModeHardwareRouterProxy:
+		caps.CreateStrategy = "semantic"
 		caps.SemanticBackendTypes = []string{"proxy", "redirect"}
 		caps.RequestBackendTypes = []string{"proxy", "redirect", "response"}
-		caps.SemanticFlags = []string{"--name", "--domain", "--port", "--ssl", "--cert-id", "--http2", "--sni", "--url-path", "--url-path-op", "--backend-type", "--upstream", "--load-balance", "--xff-action", "--redirect-url", "--redirect-code", "--policy-group", "--enable", "--request", "--check", "--explain", "--yes"}
+		caps.SemanticFlags = []string{"--name", "--domain", "--port", "--ssl", "--cert-id", "--http2", "--sni", "--non-http", "--url-path", "--url-path-op", "--backend-type", "--upstream", "--load-balance", "--xff-action", "--redirect-url", "--redirect-code", "--policy-group", "--enable", "--request", "--check", "--explain", "--yes"}
 	case ModeSoftwareClusterReverseProxy:
+		caps.CreateStrategy = "semantic_limited"
 		caps.SemanticBackendTypes = nil
 		caps.RequestBackendTypes = nil
 		caps.SemanticFlags = []string{"--name", "--domain", "--port", "--ssl", "--cert-id", "--http2", "--sni", "--url-path", "--url-path-op", "--policy-group", "--enable", "--request", "--check", "--explain", "--yes"}
 		caps.Notes = append(caps.Notes, "cluster reverse proxy creation does not accept backend_config/upstream semantic flags")
+	case ModeHardwareTransparentProxy, ModeHardwareTransparentBridging, ModeSoftwarePortMirroring, ModeHardwarePortMirroring, ModeHardwareTrafficDetection:
+		caps.CreateStrategy = "request_only"
+		caps.SemanticBackendTypes = nil
+		caps.RequestBackendTypes = nil
+		caps.SemanticFlags = []string{"--request", "--enable", "--check", "--explain", "--yes"}
+		caps.Notes = append(caps.Notes, "this deployment mode requires --request JSON for site create")
 	}
 	return caps
 }
