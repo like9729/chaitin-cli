@@ -82,6 +82,62 @@ safeline site enable <id>
 safeline site disable <id>
 ```
 
+#### AI 站点创建
+
+该能力面向 AISOC 或其他智能体调度，按一次命令操作一个 SafeLine 目标。CLI 不导入站点定义文件，也不在内部批量操作多个 SafeLine 实例。
+
+推荐流程：
+
+1. 工单中包含一个或多个站点定义。
+2. 智能体读取 CLI help 和目标 capabilities。
+3. 智能体按目标/站点逐条执行命令并记录返回结果。
+4. 回退时使用返回的站点 ID 执行 `safeline site delete <id> --yes`。
+
+检测目标版本、部署模式和能力：
+
+```bash
+chaitin-cli safeline inspect --indent
+chaitin-cli safeline site create capabilities --indent
+```
+
+当 CLI 无法从目标检测版本和部署模式时，可以使用命令行参数或 `config.yaml` 中的 `version`、`operation_mode` 作为回退：
+
+```bash
+chaitin-cli safeline --safeline-version 25.03.007_r7 --operation-mode software-reverse-proxy inspect --indent
+```
+
+首版站点创建支持：
+
+- `Software Reverse Proxy`
+- `Software Cluster Reverse Proxy`
+
+HTTPS 站点创建前先查询或上传证书：
+
+```bash
+chaitin-cli safeline cert list --indent
+chaitin-cli safeline cert get 12 --indent
+chaitin-cli safeline cert upload --name app-cert --crt ./app.crt --key ./app.key --indent
+```
+
+站点创建默认值和限制：
+
+- 创建后默认禁用；传 `--enable` 才会创建为启用状态。
+- `--domain` 必填且可重复，`*` 会原样传给 SafeLine 后端校验。
+- `--port` 必填且可重复。
+- `--ssl` 必须同时传 `--cert-id`。
+- `--http2` 和 `--sni` 必须同时启用 `--ssl`。
+- 默认 URL 路径为 `/`，匹配操作为 `pre`。
+- 软件反向代理默认后端类型为 `proxy`。
+- `response` 后端只通过 `--request` 原始 JSON 支持。
+
+示例：
+
+```bash
+chaitin-cli safeline site create --check --name app-a --domain app.example.com --port 443 --ssl --cert-id 12 --upstream http://10.0.0.1:8080 --policy-group 3 --indent
+chaitin-cli safeline site create --yes --name app-a --domain app.example.com --port 443 --ssl --cert-id 12 --upstream http://10.0.0.1:8080 --policy-group 3 --indent
+chaitin-cli safeline site delete 123 --yes --indent
+```
+
 ---
 
 ### ip-group - IP 组管理

@@ -147,6 +147,26 @@ chaitin-cli apisec risk event list --query count=20 --query offset=0 --output js
 
 `apisec raw` 保留为高级入口，用于调用生成出的底层 API 操作；日常查询建议先运行 `chaitin-cli apisec --help` 或对应语义命令的 `--help`。
 
+### SafeLine 企业版 AI 站点操作
+
+SafeLine 企业版命令支持面向 AI/AISOC 调度的环境检查、证书查询/上传、站点创建预览、站点创建和回退删除。
+
+首版站点创建支持的部署模式：
+
+- `Software Reverse Proxy`
+- `Software Cluster Reverse Proxy`
+
+推荐调度流程：
+
+```bash
+chaitin-cli safeline inspect --indent
+chaitin-cli safeline site create capabilities --indent
+chaitin-cli safeline cert list --indent
+chaitin-cli safeline site create --check --name app-a --domain app.example.com --port 443 --ssl --cert-id 12 --upstream http://10.0.0.1:8080 --policy-group 3 --indent
+chaitin-cli safeline site create --yes --name app-a --domain app.example.com --port 443 --ssl --cert-id 12 --upstream http://10.0.0.1:8080 --policy-group 3 --indent
+chaitin-cli safeline site delete 123 --yes --indent
+```
+
 `.env` 示例：
 
 ```bash

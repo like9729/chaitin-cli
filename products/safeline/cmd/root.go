@@ -17,22 +17,30 @@ import (
 
 // Global flags - these are set by the parent safeline command via SetFlags
 var (
-	URL           string
-	APIKey        string
-	Output        string
-	Insecure      bool
-	DryRun        bool
-	ServerVersion string // detected server version, empty if unknown
+	URL                   string
+	APIKey                string
+	Output                string
+	Insecure              bool
+	DryRun                bool
+	ServerVersion         string // detected server version, empty if unknown
+	VersionOverride       string
+	OperationModeOverride string
+	ConfigVersion         string
+	ConfigOperationMode   string
 )
 
 // SetFlags sets the global flags from the safeline package.
 // This must be called by the safeline package before commands run.
-func SetFlags(url, apiKey, output string, insecure bool, dryRun bool) {
+func SetFlags(url, apiKey, output string, insecure bool, dryRun bool, versionOverride, operationModeOverride, configVersion, configOperationMode string) {
 	URL = url
 	APIKey = apiKey
 	Output = output
 	Insecure = insecure
 	DryRun = dryRun
+	VersionOverride = versionOverride
+	OperationModeOverride = operationModeOverride
+	ConfigVersion = configVersion
+	ConfigOperationMode = configOperationMode
 }
 
 // SetServerVersion sets the detected server version for subcommand use.

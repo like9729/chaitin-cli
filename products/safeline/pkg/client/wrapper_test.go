@@ -1,13 +1,64 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 )
+
+func TestDoRawMultipart(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Fatalf("method %s", r.Method)
+		}
+		if r.URL.Path != "/api/UploadSSLCertAPI" {
+			t.Fatalf("path %s", r.URL.Path)
+		}
+		if err := r.ParseMultipartForm(1024 * 1024); err != nil {
+			t.Fatalf("ParseMultipartForm: %v", err)
+		}
+		if got := r.FormValue("name"); got != "cert-a" {
+			t.Fatalf("name %q", got)
+		}
+		if _, _, err := r.FormFile("crt_file"); err != nil {
+			t.Fatalf("missing crt_file: %v", err)
+		}
+		if _, _, err := r.FormFile("key_file"); err != nil {
+			t.Fatalf("missing key_file: %v", err)
+		}
+		json.NewEncoder(w).Encode(Envelope{Data: json.RawMessage(`{"id":12,"name":"cert-a"}`)})
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, srv.Client())
+	body := &bytes.Buffer{}
+	mw := multipart.NewWriter(body)
+	_ = mw.WriteField("name", "cert-a")
+	fw, _ := mw.CreateFormFile("crt_file", "a.crt")
+	_, _ = fw.Write([]byte("crt"))
+	fw, _ = mw.CreateFormFile("key_file", "a.key")
+	_, _ = fw.Write([]byte("key"))
+	_ = mw.Close()
+	env, err := c.DoRaw("POST", "/api/UploadSSLCertAPI", body, mw.FormDataContentType(), nil)
+	if err != nil {
+		t.Fatalf("DoRaw: %v", err)
+	}
+	if string(env.Data) == "" {
+		t.Fatalf("empty data")
+	}
+}
+
+func TestNewTrimsTrailingSlash(t *testing.T) {
+	c := New("https://example.com/", nil)
+	if c.BaseURL != "https://example.com" {
+		t.Fatalf("BaseURL = %q, want trailing slash trimmed", c.BaseURL)
+	}
+}
 
 func TestIsParamError(t *testing.T) {
 	tests := []struct {
