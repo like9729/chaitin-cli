@@ -11,6 +11,7 @@ import (
 	"github.com/chaitin/chaitin-cli/products/chaitin"
 	"github.com/chaitin/chaitin-cli/products/cloudwalker"
 	"github.com/chaitin/chaitin-cli/products/ddr"
+	"github.com/chaitin/chaitin-cli/products/dsensor"
 	"github.com/chaitin/chaitin-cli/products/safeline"
 	safelinece "github.com/chaitin/chaitin-cli/products/safeline-ce"
 	"github.com/chaitin/chaitin-cli/products/tanswer"
@@ -51,6 +52,7 @@ func newApp() (*app, error) {
 	a.registerProductCommand(safelinece.NewCommand())
 	a.registerProductCommand(cloudwalker.NewCommand())
 	a.registerProductCommand(ddr.NewCommand())
+	a.registerProductCommand(dsensor.NewCommand())
 	a.registerProductCommand(tanswer.NewCommand())
 
 	xrayCmd, err := xray.NewCommand()
@@ -115,6 +117,8 @@ func (a *app) wrapProductCommand(cmd *cobra.Command) {
 			cloudwalker.ApplyRuntimeConfig(command, a.config)
 		case "ddr":
 			ddr.ApplyRuntimeConfig(command, a.config, a.configPath, a.dryRun)
+		case "dsensor":
+			dsensor.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "tanswer":
 			tanswer.ApplyRuntimeConfig(command, a.config)
 		case "xray":

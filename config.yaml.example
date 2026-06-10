@@ -28,3 +28,7 @@ ddr:
   url: ""
   api_key: ""
   company_id: ""
+
+dsensor:
+  url: ""
+  api_key: ""
