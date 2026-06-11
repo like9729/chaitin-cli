@@ -80,6 +80,7 @@ After installation, simply describe your needs to the AI agent, for example:
 | `cloudwalker` | CloudWalker CWPP event, asset, vulnerability, protection policy, and system management |
 | `tanswer` | T-Answer firewall, whitelist, and block rule management |
 | `ddr` | DDR API token and connection configuration helpers |
+| `dsensor` | D-Sensor security monitoring, agent, honeypot, alarm, and threat log management |
 
 The root command handles configuration loading, product command registration, and BusyBox-style dispatch. Each product directory owns its commands, flags, configuration decoding, and API calls.
 
@@ -105,6 +106,10 @@ ddr:
 xray:
   url: https://xray.example.com/api/v2
   api_key: YOUR_API_KEY
+
+dsensor:
+  url: https://dsensor.example.com
+  api_key: YOUR_API_KEY
 ```
 You can also put the same keys into environment variables or a local `.env` file. Variable names follow `<PRODUCT>_<FIELD>`:
 
@@ -118,6 +123,8 @@ ddr.api_key          -> DDR_API_KEY
 ddr.company_id       -> DDR_COMPANY_ID
 xray.url             -> XRAY_URL
 xray.api_key         -> XRAY_API_KEY
+dsensor.url          -> DSENSOR_URL
+dsensor.api_key      -> DSENSOR_API_KEY
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
 safeline.url         -> SAFELINE_URL

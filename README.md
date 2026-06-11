@@ -82,6 +82,7 @@ npx skills add chaitin/chaitin-cli
 | `tanswer` | T-Answer 防火墙、白名单和阻断规则管理 |
 | `ddr` | DDR API Token 和连接配置辅助能力 |
 | `apisec` | APISec API 资产、站点、应用、访问者、数据安全和风险事件管理 |
+| `dsensor` | D-Sensor 谛听安全监控、探针、蜜罐、告警和威胁日志管理 |
 
 根命令负责配置加载、产品命令注册和 BusyBox 风格调用分发；各产品目录负责自己的命令、参数、配置解析和 API 调用逻辑。
 
@@ -111,6 +112,10 @@ xray:
 apisec:
   url: https://apisec.example.com
   api_token: YOUR_API_TOKEN
+
+dsensor:
+  url: https://dsensor.example.com
+  api_key: YOUR_API_KEY
 ```
 也可以把同样的配置放到环境变量或本地 `.env` 文件中。变量命名规则为 `<PRODUCT>_<FIELD>`：
 
@@ -126,6 +131,8 @@ xray.url             -> XRAY_URL
 xray.api_key         -> XRAY_API_KEY
 apisec.url           -> APISEC_URL
 apisec.api_token     -> APISEC_API_TOKEN
+dsensor.url          -> DSENSOR_URL
+dsensor.api_key      -> DSENSOR_API_KEY
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
 safeline.url         -> SAFELINE_URL
