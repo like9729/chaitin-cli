@@ -9,7 +9,7 @@ Unified CLI for Chaitin security products
 
 ## Overview
 
-`chaitin-cli` is a unified command-line tool for Chaitin security products. It provides common operations, queries, and automation capabilities for multiple products from one binary. The goal is to reduce the friction caused by separate APIs, authentication patterns, and output formats, so developers, operators, and AI agents can manage SafeLine, X-Ray, CloudWalker, T-Answer, DDR, and related products consistently.
+`chaitin-cli` is a unified command-line tool for Chaitin security products. It provides common operations, queries, and automation capabilities for multiple products from one binary. The goal is to reduce the friction caused by separate APIs, authentication patterns, and output formats, so developers, operators, and AI agents can manage SafeLine, X-Ray, CloudWalker, Veinmind, T-Answer, DDR, and related products consistently.
 
 Core capabilities:
 
@@ -50,6 +50,10 @@ After installation, simply describe your needs to the AI agent, for example:
 
 [![asciicast](https://asciinema.org/a/894643.svg)](https://asciinema.org/a/894643)
 
+### Veinmind
+
+[![asciicast](https://asciinema.org/a/cTKHufj2Fewwl95j.svg)](https://asciinema.org/a/cTKHufj2Fewwl95j)
+
 ### T-Answer
 
 [![asciicast](https://asciinema.org/a/Gs8KPOIcEnRRnXWr.svg)](https://asciinema.org/a/Gs8KPOIcEnRRnXWr)
@@ -79,6 +83,7 @@ After installation, simply describe your needs to the AI agent, for example:
 | `safeline-ce` | SafeLine CE site, rule, log, certificate, and enhanced protection management |
 | `xray` | X-Ray scan task, asset, vulnerability, report, and system configuration management |
 | `cloudwalker` | CloudWalker CWPP event, asset, vulnerability, protection policy, and system management |
+| `veinmind` | CloudWalker CNAPP container, image, and escape protection management |
 | `tanswer` | T-Answer firewall, whitelist, and block rule management |
 | `ddr` | DDR API token and connection configuration helpers |
 | `dsensor` | D-Sensor security monitoring, agent, honeypot, alarm, and threat log management |
@@ -105,6 +110,10 @@ ddr:
   url: "https://ddr.example.com:8443/qzh/api/v1"
   api_key: "YOUR_API_KEY"
   company_id: "YOUR_COMPANY_ID"
+
+veinmind:
+  url: "https://veinmind.example.com"
+  api_key: "YOUR_64_CHARACTER_API_TOKEN"
 
 xray:
   url: https://xray.example.com/api/v2
@@ -133,6 +142,8 @@ tanswer.api_key      -> TANSWER_API_KEY
 ddr.url              -> DDR_URL
 ddr.api_key          -> DDR_API_KEY
 ddr.company_id       -> DDR_COMPANY_ID
+veinmind.url         -> VEINMIND_URL
+veinmind.api_key     -> VEINMIND_API_KEY
 xray.url             -> XRAY_URL
 xray.api_key         -> XRAY_API_KEY
 dsensor.url          -> DSENSOR_URL
