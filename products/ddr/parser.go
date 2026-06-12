@@ -14,6 +14,11 @@ import (
 
 var versionSegmentPattern = regexp.MustCompile(`^v[0-9]+([._-][0-9]+)*$`)
 
+const (
+	operationMethodAnnotation = "chaitin-cli/ddr/method"
+	operationPathAnnotation   = "chaitin-cli/ddr/path"
+)
+
 type Parser struct{}
 
 func NewParser() *Parser {
@@ -67,7 +72,9 @@ func (p *Parser) GenerateCommands(api *OpenAPI) ([]*cobra.Command, error) {
 
 	var commands []*cobra.Command
 	for _, name := range sortedKeys(parentCommands) {
-		commands = append(commands, parentCommands[name])
+		cmd := parentCommands[name]
+		deduplicateCommandTree(cmd)
+		commands = append(commands, cmd)
 	}
 	return commands, nil
 }
@@ -185,10 +192,19 @@ func operationName(segments []string, method string) string {
 	last := filtered[len(filtered)-1]
 	switch strings.ToLower(last) {
 	case "detail":
+		if len(filtered) > 1 {
+			return normalizeCommandSegment(strings.Join(append(filtered[:len(filtered)-1], "get"), "-"))
+		}
 		return "get"
 	case "retrieve":
+		if len(filtered) > 1 {
+			return normalizeCommandSegment(strings.Join(append(filtered[:len(filtered)-1], "get"), "-"))
+		}
 		return "get"
 	case "modify":
+		if len(filtered) > 1 {
+			return normalizeCommandSegment(strings.Join(append(filtered[:len(filtered)-1], "update"), "-"))
+		}
 		return "update"
 	}
 
@@ -237,6 +253,10 @@ func (p *Parser) createOperationCommand(method, path string, op *Operation) *cob
 	cmd := &cobra.Command{
 		Use:   use,
 		Short: short,
+		Annotations: map[string]string{
+			operationMethodAnnotation: method,
+			operationPathAnnotation:   path,
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return p.executeCommand(cmd, method, path, op)
 		},
@@ -255,6 +275,154 @@ func (p *Parser) createOperationCommand(method, path string, op *Operation) *cob
 	}
 
 	return cmd
+}
+
+func deduplicateCommandTree(cmd *cobra.Command) {
+	deduplicateSiblingCommands(cmd)
+	for _, child := range cmd.Commands() {
+		deduplicateCommandTree(child)
+	}
+}
+
+func deduplicateSiblingCommands(parent *cobra.Command) {
+	byName := make(map[string][]*cobra.Command)
+	for _, child := range parent.Commands() {
+		byName[child.Name()] = append(byName[child.Name()], child)
+	}
+
+	for name, commands := range byName {
+		if len(commands) <= 1 {
+			continue
+		}
+		renameDuplicateCommands(parent, name, commands)
+	}
+}
+
+func renameDuplicateCommands(parent *cobra.Command, duplicateName string, commands []*cobra.Command) {
+	reserved := make(map[string]struct{})
+	for _, child := range parent.Commands() {
+		if child.Name() != duplicateName {
+			reserved[child.Name()] = struct{}{}
+		}
+	}
+
+	ordered := append([]*cobra.Command(nil), commands...)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		return !isGeneratedOperationCommand(ordered[i]) && isGeneratedOperationCommand(ordered[j])
+	})
+
+	for _, child := range ordered {
+		candidate := duplicateName
+		if isGeneratedOperationCommand(child) {
+			candidate = contextualOperationName(child.Annotations[operationPathAnnotation], child.Annotations[operationMethodAnnotation])
+		}
+		candidate = uniqueCommandName(candidate, child, reserved)
+		setCommandName(child, candidate)
+		reserved[candidate] = struct{}{}
+	}
+}
+
+func isGeneratedOperationCommand(cmd *cobra.Command) bool {
+	if cmd == nil || cmd.Annotations == nil {
+		return false
+	}
+	return cmd.Annotations[operationPathAnnotation] != ""
+}
+
+func contextualOperationName(path, method string) string {
+	segments := normalizedSegments(path)
+	if len(segments) == 0 {
+		return defaultOperationName(method)
+	}
+
+	opStart := 1
+	if len(segments) > 2 && !isParameterSegment(segments[1]) && !looksLikeLeafOperation(segments[1]) {
+		opStart = 2
+	}
+
+	return commandNameFromSegments(segments[opStart:], method)
+}
+
+func fullPathOperationName(path, method string) string {
+	segments := normalizedSegments(path)
+	if len(segments) <= 1 {
+		return defaultOperationName(method)
+	}
+	return commandNameFromSegments(segments[1:], method)
+}
+
+func commandNameFromSegments(segments []string, method string) string {
+	parts := make([]string, 0, len(segments)+1)
+	hasOperationSegment := false
+	for index, segment := range segments {
+		if index == 0 && strings.EqualFold(segment, "action") {
+			continue
+		}
+		if isParameterSegment(segment) {
+			parts = append(parts, normalizeCommandSegment(segment))
+			continue
+		}
+		hasOperationSegment = true
+		switch strings.ToLower(segment) {
+		case "detail", "retrieve":
+			parts = append(parts, "get")
+		case "modify":
+			parts = append(parts, "update")
+		default:
+			parts = append(parts, normalizeCommandSegment(segment))
+		}
+	}
+	if len(parts) == 0 {
+		return defaultOperationName(method)
+	}
+	if !hasOperationSegment {
+		parts = append(parts, defaultOperationName(method))
+	}
+	return normalizeCommandSegment(strings.Join(parts, "-"))
+}
+
+func uniqueCommandName(candidate string, cmd *cobra.Command, reserved map[string]struct{}) string {
+	if candidate == "" {
+		candidate = cmd.Name()
+	}
+	if _, ok := reserved[candidate]; !ok {
+		return candidate
+	}
+
+	path := ""
+	method := ""
+	if cmd.Annotations != nil {
+		path = cmd.Annotations[operationPathAnnotation]
+		method = cmd.Annotations[operationMethodAnnotation]
+	}
+	if path != "" {
+		pathCandidate := fullPathOperationName(path, method)
+		if _, ok := reserved[pathCandidate]; !ok {
+			return pathCandidate
+		}
+
+		methodCandidate := normalizeCommandSegment(strings.ToLower(method) + "-" + pathCandidate)
+		if _, ok := reserved[methodCandidate]; !ok {
+			return methodCandidate
+		}
+	}
+
+	for i := 2; ; i++ {
+		numbered := fmt.Sprintf("%s-%d", candidate, i)
+		if _, ok := reserved[numbered]; !ok {
+			return numbered
+		}
+	}
+}
+
+func setCommandName(cmd *cobra.Command, name string) {
+	fields := strings.Fields(cmd.Use)
+	if len(fields) == 0 {
+		cmd.Use = name
+		return
+	}
+	fields[0] = name
+	cmd.Use = strings.Join(fields, " ")
 }
 
 func classifyOperationName(path, method string) string {
