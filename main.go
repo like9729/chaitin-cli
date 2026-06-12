@@ -17,6 +17,7 @@ import (
 	"github.com/chaitin/chaitin-cli/products/safeline"
 	safelinece "github.com/chaitin/chaitin-cli/products/safeline-ce"
 	"github.com/chaitin/chaitin-cli/products/tanswer"
+	"github.com/chaitin/chaitin-cli/products/veinmind"
 	"github.com/chaitin/chaitin-cli/products/xray"
 	"github.com/spf13/cobra"
 )
@@ -58,6 +59,7 @@ func newApp() (*app, error) {
 	a.registerProductCommand(ddr.NewCommand())
 	a.registerProductCommand(dsensor.NewCommand())
 	a.registerProductCommand(tanswer.NewCommand())
+	a.registerProductCommand(veinmind.NewCommand())
 
 	xrayCmd, err := xray.NewCommand()
 	if err != nil {
@@ -129,6 +131,8 @@ func (a *app) wrapProductCommand(cmd *cobra.Command) {
 			dsensor.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "tanswer":
 			tanswer.ApplyRuntimeConfig(command, a.config)
+		case "veinmind":
+			veinmind.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "xray":
 			xray.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "safeline":

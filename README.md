@@ -11,7 +11,7 @@
 
 ## 项目简介
 
-`chaitin-cli` 是面向长亭安全产品的统一命令行工具，目标是在一个二进制中提供多产品的常用运维、查询和自动化能力。它解决了不同产品 API、认证方式和输出格式分散的问题，让开发者、运维人员和 AI Agent 可以用一致的方式管理 SafeLine、X-Ray、CloudWalker、T-Answer、DDR 等产品。
+`chaitin-cli` 是面向长亭安全产品的统一命令行工具，目标是在一个二进制中提供多产品的常用运维、查询和自动化能力。它解决了不同产品 API、认证方式和输出格式分散的问题，让开发者、运维人员和 AI Agent 可以用一致的方式管理 SafeLine、X-Ray、CloudWalker、Veinmind、T-Answer、DDR 等产品。
 
 核心能力：
 
@@ -51,6 +51,9 @@ npx skills add chaitin/chaitin-cli
 ### CloudWalker
 [![asciicast](https://asciinema.org/a/894643.svg)](https://asciinema.org/a/894643)
 
+### Veinmind
+[![asciicast](https://asciinema.org/a/cTKHufj2Fewwl95j.svg)](https://asciinema.org/a/cTKHufj2Fewwl95j)
+
 ### T-Answer
 
 [![asciicast](https://asciinema.org/a/Gs8KPOIcEnRRnXWr.svg)](https://asciinema.org/a/Gs8KPOIcEnRRnXWr)
@@ -80,6 +83,7 @@ npx skills add chaitin/chaitin-cli
 | `safeline-ce` | SafeLine CE 站点、规则、日志、证书和增强防护管理 |
 | `xray` | X-Ray 扫描任务、资产、漏洞、报告和系统配置管理 |
 | `cloudwalker` | CloudWalker CWPP 事件、资产、漏洞、防护策略和系统管理 |
+| `veinmind` | CloudWalker CNAPP 容器、镜像、逃逸防护管理 |
 | `tanswer` | T-Answer 防火墙、白名单和阻断规则管理 |
 | `ddr` | DDR API Token 和连接配置辅助能力 |
 | `apisec` | APISec API 资产、站点、应用、访问者、数据安全和风险事件管理 |
@@ -107,6 +111,10 @@ ddr:
   url: "https://ddr.example.com:8443/qzh/api/v1"
   api_key: "YOUR_API_KEY"
   company_id: "YOUR_COMPANY_ID"
+
+veinmind:
+  url: "https://veinmind.example.com"
+  api_key: "YOUR_64_CHARACTER_API_TOKEN"
 
 xray:
   url: https://xray.example.com/api/v2
@@ -139,6 +147,8 @@ tanswer.api_key      -> TANSWER_API_KEY
 ddr.url              -> DDR_URL
 ddr.api_key          -> DDR_API_KEY
 ddr.company_id       -> DDR_COMPANY_ID
+veinmind.url         -> VEINMIND_URL
+veinmind.api_key     -> VEINMIND_API_KEY
 xray.url             -> XRAY_URL
 xray.api_key         -> XRAY_API_KEY
 apisec.url           -> APISEC_URL
