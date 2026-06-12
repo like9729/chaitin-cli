@@ -42,6 +42,7 @@ After installation, simply describe your needs to the AI agent, for example:
 - "Show me recent attack logs in SafeLine"
 - "Create a scan task in X-Ray"
 - "List vulnerability events in CloudWalker"
+- "Create a denoise task in CodeForce and check its result"
 
 ## Demo
 
@@ -81,6 +82,8 @@ After installation, simply describe your needs to the AI agent, for example:
 | `tanswer` | T-Answer firewall, whitelist, and block rule management |
 | `ddr` | DDR API token and connection configuration helpers |
 | `dsensor` | D-Sensor security monitoring, agent, honeypot, alarm, and threat log management |
+| `codeinsight` | CodeInsight project, repository configuration, scan task, and report export management |
+| `codeforce` | CodeForce project, project AI employee, AI dev task, native audit, denoise, code package, repository, and Git auth management |
 
 The root command handles configuration loading, product command registration, and BusyBox-style dispatch. Each product directory owns its commands, flags, configuration decoding, and API calls.
 
@@ -110,6 +113,15 @@ xray:
 dsensor:
   url: https://dsensor.example.com
   api_key: YOUR_API_KEY
+
+codeinsight:
+  url: https://codeinsight.example.com
+  access_token: YOUR_ACCESS_TOKEN
+
+codeforce:
+  url: https://codeforce.example.com
+  access_token: YOUR_ACCESS_TOKEN
+  account_type: admin
 ```
 You can also put the same keys into environment variables or a local `.env` file. Variable names follow `<PRODUCT>_<FIELD>`:
 
@@ -125,6 +137,11 @@ xray.url             -> XRAY_URL
 xray.api_key         -> XRAY_API_KEY
 dsensor.url          -> DSENSOR_URL
 dsensor.api_key      -> DSENSOR_API_KEY
+codeinsight.url      -> CODEINSIGHT_URL
+codeinsight.access_token -> CODEINSIGHT_ACCESS_TOKEN or CODEINSIGHT_TOKEN
+codeforce.url        -> CODEFORCE_URL
+codeforce.access_token -> CODEFORCE_ACCESS_TOKEN or CODEFORCE_API_KEY
+codeforce.account_type -> CODEFORCE_ACCOUNT_TYPE
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
 safeline.url         -> SAFELINE_URL
@@ -154,6 +171,45 @@ Use root-level `--dry-run` for commands that support dry-run:
 ```bash
 chaitin-cli --dry-run xray plan PostPlanFilter --filterPlan.limit=10
 ```
+
+### CodeInsight Projects And Tasks
+
+```bash
+export CODEINSIGHT_URL=https://codeinsight.example.com
+export CODEINSIGHT_TOKEN=YOUR_ACCESS_TOKEN
+
+chaitin-cli codeinsight project create --name demo-java --language java
+chaitin-cli codeinsight repo-config create --name git-prod --repo-type git --git-provider gitlab --server-host https://git.example.com/group/demo.git --auth-type access_token --access-token GIT_TOKEN
+chaitin-cli codeinsight task create repo --project-name demo-java --task-name demo-repo --rule-set-name Corax-Java --repo-config-name git-prod --ref-type branch --ref-name main
+chaitin-cli codeinsight task result --task-id 12345
+chaitin-cli codeinsight task result download --task-id 12345 --out ./reports/12345.json
+```
+
+### CodeForce Projects And Tasks
+
+```bash
+export CODEFORCE_URL=https://codeforce.example.com
+export CODEFORCE_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
+export CODEFORCE_ACCOUNT_TYPE=admin
+
+chaitin-cli codeforce project create --name demo-app --repository-id repo-1
+chaitin-cli codeforce project ai-employee model-options --project-id project-1
+chaitin-cli codeforce project ai-employee create --project-id project-1 --type dev --name backend-dev-agent --enabled
+chaitin-cli codeforce project ai-dev create --project-id project-1 --employee-id employee-1 --title "Add repository health dashboard" --issue-url https://github.com/example/demo/issues/12 --branch feature/repo-health
+chaitin-cli codeforce audit native create git --repository-id repo-1 --source-ref branch:main --audit-rule-id 101 --task-name "main native audit"
+chaitin-cli codeforce code-management create --name demo-code-drop --version-description "2026-06 release" --file ./artifacts/demo.zip
+chaitin-cli codeforce repository create project --name demo-git --platform gitlab --repositories-url https://git.example.com/group/demo.git --token GIT_TOKEN
+chaitin-cli codeforce git-auth create --name github-personal --platform github --token GIT_TOKEN
+chaitin-cli codeforce denoise parse --type sast --report-file ./reports/sast.json
+chaitin-cli codeforce denoise create --type sast --name repo-noise-check --engineer-id engineer-1 --source-type repository --repository-name demo-repo --branch-or-tag main --report-file ./reports/sast.json
+chaitin-cli codeforce denoise result --task-id denoise-task-1
+```
+
+Notes:
+
+- `account_type=admin|user` targets the management APIs for project creation, AI employees, AI dev tasks, native audit, code management, project repositories, and git-auth.
+- `account_type=openapi` targets the public CodeForce OpenAPI and is appropriate for `openapi whoami`, `denoise parse`, OpenAPI-backed `denoise create`, and some result lookups.
+- If the current credential is really an OpenAPI key, management commands fail with an explicit message instead of pretending they succeeded.
 
 ## Project Structure
 

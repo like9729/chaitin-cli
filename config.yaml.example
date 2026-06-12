@@ -32,3 +32,12 @@ ddr:
 dsensor:
   url: ""
   api_key: ""
+
+codeinsight:
+  url: ""
+  access_token: ""
+
+codeforce:
+  url: ""
+  access_token: ""
+  account_type: "admin"
