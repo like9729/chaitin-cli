@@ -36,3 +36,8 @@ dsensor:
 codeinsight:
   url: ""
   access_token: ""
+
+codeforce:
+  url: ""
+  access_token: ""
+  account_type: "admin"

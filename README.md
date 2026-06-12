@@ -44,6 +44,7 @@ npx skills add chaitin/chaitin-cli
 - "帮我查看 SafeLine 最近的攻击日志"
 - "在 X-Ray 中创建一个扫描任务"
 - "列出 CloudWalker 中的漏洞事件"
+- "在 CodeForce 中创建降噪任务并查看结果"
 
 ## 演示
 
@@ -84,6 +85,7 @@ npx skills add chaitin/chaitin-cli
 | `apisec` | APISec API 资产、站点、应用、访问者、数据安全和风险事件管理 |
 | `dsensor` | D-Sensor 谛听安全监控、探针、蜜罐、告警和威胁日志管理 |
 | `codeinsight` | CodeInsight 项目、代码托管配置、扫描任务和报告导出管理 |
+| `codeforce` | CodeForce 项目、项目 AI 员工、AI 开发任务、原生审计、降噪、代码包、仓库和 Git 授权配置管理 |
 
 根命令负责配置加载、产品命令注册和 BusyBox 风格调用分发；各产品目录负责自己的命令、参数、配置解析和 API 调用逻辑。
 
@@ -121,6 +123,11 @@ dsensor:
 codeinsight:
   url: https://codeinsight.example.com
   access_token: YOUR_ACCESS_TOKEN
+
+codeforce:
+  url: https://codeforce.example.com
+  access_token: YOUR_ACCESS_TOKEN
+  account_type: admin
 ```
 也可以把同样的配置放到环境变量或本地 `.env` 文件中。变量命名规则为 `<PRODUCT>_<FIELD>`：
 
@@ -140,6 +147,9 @@ dsensor.url          -> DSENSOR_URL
 dsensor.api_key      -> DSENSOR_API_KEY
 codeinsight.url      -> CODEINSIGHT_URL
 codeinsight.access_token -> CODEINSIGHT_ACCESS_TOKEN 或 CODEINSIGHT_TOKEN
+codeforce.url        -> CODEFORCE_URL
+codeforce.access_token -> CODEFORCE_ACCESS_TOKEN 或 CODEFORCE_API_KEY
+codeforce.account_type -> CODEFORCE_ACCOUNT_TYPE
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
 safeline.url         -> SAFELINE_URL
@@ -217,6 +227,32 @@ chaitin-cli codeinsight task create repo --project-name demo-java --task-name de
 chaitin-cli codeinsight task result --task-id 12345
 chaitin-cli codeinsight task result download --task-id 12345 --out ./reports/12345.json
 ```
+
+### CodeForce 项目与任务
+
+```bash
+export CODEFORCE_URL=https://codeforce.example.com
+export CODEFORCE_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
+export CODEFORCE_ACCOUNT_TYPE=admin
+
+chaitin-cli codeforce project create --name demo-app --repository-id repo-1
+chaitin-cli codeforce project ai-employee model-options --project-id project-1
+chaitin-cli codeforce project ai-employee create --project-id project-1 --type dev --name backend-dev-agent --enabled
+chaitin-cli codeforce project ai-dev create --project-id project-1 --employee-id employee-1 --title "Add repository health dashboard" --issue-url https://github.com/example/demo/issues/12 --branch feature/repo-health
+chaitin-cli codeforce audit native create git --repository-id repo-1 --source-ref branch:main --audit-rule-id 101 --task-name "main native audit"
+chaitin-cli codeforce code-management create --name demo-code-drop --version-description "2026-06 release" --file ./artifacts/demo.zip
+chaitin-cli codeforce repository create project --name demo-git --platform gitlab --repositories-url https://git.example.com/group/demo.git --token GIT_TOKEN
+chaitin-cli codeforce git-auth create --name github-personal --platform github --token GIT_TOKEN
+chaitin-cli codeforce denoise parse --type sast --report-file ./reports/sast.json
+chaitin-cli codeforce denoise create --type sast --name repo-noise-check --engineer-id engineer-1 --source-type repository --repository-name demo-repo --branch-or-tag main --report-file ./reports/sast.json
+chaitin-cli codeforce denoise result --task-id denoise-task-1
+```
+
+说明：
+
+- `account_type=admin|user` 走管理接口，适用于项目创建、AI 员工、AI 开发任务、原生审计、代码管理、项目仓库和 git-auth。
+- `account_type=openapi` 走 CodeForce 对外 OpenAPI，适用于 `openapi whoami`、`denoise parse`、OpenAPI 方式的 `denoise create` 和部分结果查询。
+- 如果当前令牌实际上是 OpenAPI key，管理接口命令会明确提示切换凭证类型，而不会伪造成功。
 
 ## 项目结构
 
