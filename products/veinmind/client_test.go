@@ -63,8 +63,8 @@ func TestClientAuthenticatesWithTokenLogin(t *testing.T) {
 					"Content-Type": []string{"application/json"},
 					"Set-Cookie":   []string{"veinmind=session-id; Path=/"},
 				},
-				Body:       io.NopCloser(strings.NewReader(`{"code":200}`)),
-				Request:    r,
+				Body:    io.NopCloser(strings.NewReader(`{"code":200}`)),
+				Request: r,
 			}, nil
 		case "/api/test":
 			cookie, err := r.Cookie("veinmind")
@@ -168,8 +168,8 @@ func TestClientAuthAllowsNonStandardCodeWhenSessionCookieExists(t *testing.T) {
 					"Content-Type": []string{"application/json"},
 					"Set-Cookie":   []string{"veinmind=session-id; Path=/"},
 				},
-				Body:       io.NopCloser(strings.NewReader(`{"code":401,"msg":"token invalid"}`)),
-				Request:    r,
+				Body:    io.NopCloser(strings.NewReader(`{"code":401,"msg":"token invalid"}`)),
+				Request: r,
 			}, nil
 		case "/api/test":
 			cookie, err := r.Cookie("veinmind")
