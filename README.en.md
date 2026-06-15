@@ -80,6 +80,7 @@ After installation, simply describe your needs to the AI agent, for example:
 | --- | --- |
 | `chaitin` | Demo and basic commands |
 | `safeline` | SafeLine WAF site, policy, ACL, attack log, and system information management |
+| `safeline-3` | SafeLine-3 protected object, policy, ACL, log, monitor, system, and network management |
 | `safeline-ce` | SafeLine CE site, rule, log, certificate, and enhanced protection management |
 | `xray` | X-Ray scan task, asset, vulnerability, report, and system configuration management |
 | `cloudwalker` | CloudWalker CWPP event, asset, vulnerability, protection policy, and system management |
@@ -119,6 +120,10 @@ xray:
   url: https://xray.example.com/api/v2
   api_key: YOUR_API_KEY
 
+safeline-3:
+  url: https://safeline3.example.com
+  api_token: YOUR_API_TOKEN
+
 dsensor:
   url: https://dsensor.example.com
   api_key: YOUR_API_KEY
@@ -155,9 +160,27 @@ codeforce.access_token -> CODEFORCE_ACCESS_TOKEN or CODEFORCE_API_KEY
 codeforce.account_type -> CODEFORCE_ACCOUNT_TYPE
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
+safeline-3.url       -> SAFELINE_3_URL
+safeline-3.api_token -> SAFELINE_3_API_TOKEN
 safeline.url         -> SAFELINE_URL
 safeline.api_key     -> SAFELINE_API_KEY
 ```
+
+### SafeLine-3
+
+SafeLine-3 commands use an OpenAPI token. Configure `safeline-3.api_token` or set `SAFELINE_3_API_TOKEN`.
+
+SafeLine-3 calling guidance for AI agents lives in [`products/safeline3/agent-skill.md`](products/safeline3/agent-skill.md).
+
+```bash
+chaitin-cli safeline-3 node-group list --output json
+chaitin-cli safeline-3 site list --type reverse-proxy --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 policy-group list --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 log attack list --start -24h --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 raw request GET /api/v3/license
+```
+
+For complex create, update, and delete requests, prefer semantic entity commands. Use file inputs such as `--payload-file` or `--application-file` for nested payloads. `raw request` is a fallback for unwrapped `/api/v3/...` endpoints.
 
 Example `.env`:
 

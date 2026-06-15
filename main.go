@@ -16,6 +16,7 @@ import (
 	"github.com/chaitin/chaitin-cli/products/dsensor"
 	"github.com/chaitin/chaitin-cli/products/safeline"
 	safelinece "github.com/chaitin/chaitin-cli/products/safeline-ce"
+	"github.com/chaitin/chaitin-cli/products/safeline3"
 	"github.com/chaitin/chaitin-cli/products/tanswer"
 	"github.com/chaitin/chaitin-cli/products/veinmind"
 	"github.com/chaitin/chaitin-cli/products/xray"
@@ -53,6 +54,7 @@ func newApp() (*app, error) {
 	a.registerProductCommand(chaitin.NewCommand())
 	a.registerProductCommand(apisec.NewCommand())
 	a.registerProductCommand(safelinece.NewCommand())
+	a.registerProductCommand(safeline3.NewCommand())
 	a.registerProductCommand(cloudwalker.NewCommand())
 	a.registerProductCommand(codeforce.NewCommand())
 	a.registerProductCommand(codeinsight.NewCommand())
@@ -119,6 +121,8 @@ func (a *app) wrapProductCommand(cmd *cobra.Command) {
 			apisec.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "safeline-ce":
 			safelinece.ApplyRuntimeConfig(command, a.config, a.dryRun)
+		case "safeline-3":
+			safeline3.ApplyRuntimeConfig(command, a.config, a.dryRun)
 		case "cloudwalker":
 			cloudwalker.ApplyRuntimeConfig(command, a.config)
 		case "codeforce":
