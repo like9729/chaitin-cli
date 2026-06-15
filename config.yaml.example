@@ -14,6 +14,10 @@ safeline-ce:
   url: ""
   api_key: ""
 
+safeline-3:
+  url: ""
+  api_token: ""
+
 safeline:
   url: ""
   api_key: ""

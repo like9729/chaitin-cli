@@ -77,6 +77,7 @@ npx skills add chaitin/chaitin-cli
 | --- | --- |
 | `chaitin` | 示例和基础命令 |
 | `safeline` | SafeLine WAF 站点、策略、ACL、攻击日志和系统信息管理 |
+| `safeline-3` | SafeLine-3 保护对象、策略、ACL、日志、监控、系统和网络管理 |
 | `safeline-ce` | SafeLine CE 站点、规则、日志、证书和增强防护管理 |
 | `xray` | X-Ray 扫描任务、资产、漏洞、报告和系统配置管理 |
 | `cloudwalker` | CloudWalker CWPP 事件、资产、漏洞、防护策略和系统管理 |
@@ -116,6 +117,10 @@ apisec:
   url: https://apisec.example.com
   api_token: YOUR_API_TOKEN
 
+safeline-3:
+  url: https://safeline3.example.com
+  api_token: YOUR_API_TOKEN
+
 dsensor:
   url: https://dsensor.example.com
   api_key: YOUR_API_KEY
@@ -152,6 +157,8 @@ codeforce.access_token -> CODEFORCE_ACCESS_TOKEN 或 CODEFORCE_API_KEY
 codeforce.account_type -> CODEFORCE_ACCOUNT_TYPE
 safeline-ce.url      -> SAFELINE_CE_URL
 safeline-ce.api_key  -> SAFELINE_CE_API_KEY
+safeline-3.url       -> SAFELINE_3_URL
+safeline-3.api_token -> SAFELINE_3_API_TOKEN
 safeline.url         -> SAFELINE_URL
 safeline.api_key     -> SAFELINE_API_KEY
 ```
@@ -170,6 +177,20 @@ chaitin-cli apisec risk event list --query count=20 --query offset=0 --output js
 ```
 
 `apisec raw` 保留为高级入口，用于调用生成出的底层 API 操作；日常查询建议先运行 `chaitin-cli apisec --help` 或对应语义命令的 `--help`。
+
+### SafeLine-3
+
+SafeLine-3 命令使用 OpenAPI Token，请在配置中填写 `safeline-3.api_token`，或设置 `SAFELINE_3_API_TOKEN`。
+
+```bash
+chaitin-cli safeline-3 node-group list --output json
+chaitin-cli safeline-3 site list --type reverse-proxy --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 policy-group list --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 log attack list --start -24h --page 1 --page-size 20 --output json
+chaitin-cli safeline-3 raw request GET /api/v3/license
+```
+
+创建、更新、删除等复杂请求优先使用实体命令的语义参数；复杂嵌套结构可使用对应的 `--payload-file`、`--application-file` 等文件入口。`raw request` 是兜底入口，可调用未封装的 `/api/v3/...` 接口。
 
 ### SafeLine 企业版 AI 站点操作
 
